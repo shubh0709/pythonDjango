@@ -11,6 +11,34 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from typing import Any
+# settings.py
+
+import os
+
+# Add the following lines at the top to configure logging
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+LOG_FORMAT = '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+
+# Define the logger configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'logs/app.log',  # Specify the file path for log storage
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': LOG_LEVEL,
+    },
+}
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +53,7 @@ SECRET_KEY = 'django-insecure-nbxw4ilzb5s78atwj18!tzl_g50_avc%n69*#tpmufov#+692^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[Any]= []
 
 
 # Application definition
@@ -51,7 +79,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'mysite.urls'
 
-TEMPLATES = [
+TEMPLATES: list[dict[str, Any]] = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
@@ -75,11 +103,35 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'your_postgresql_db_name',
+        'USER': 'your_postgresql_db_user',
+        'PASSWORD': 'your_postgresql_db_password',
+        'HOST': 'your_postgresql_db_host',
+        'PORT': 'your_postgresql_db_port',
+    },
+     'mongodb': {
+        'ENGINE': 'djongo',
+        'NAME': 'your_mongodb_db_name',
+        'CLIENT': {
+            'host': 'your_mongodb_host',
+            'port': 27017,
+            'username': 'your_mongodb_username',
+            'password': 'your_mongodb_password',
+            'authSource': 'your_mongodb_auth_source',
+            'authMechanism': 'SCRAM-SHA-1',
+        }
     }
 }
 
+MONGODB_CONNECTION = 'mongodb://your_mongodb_connection_string'
+
+OTP_TWILIO_ACCOUNT_SID = 'your_twilio_account_sid'
+OTP_TWILIO_AUTH_TOKEN = 'your_twilio_auth_token'
+OTP_TWILIO_PHONE_NUMBER = 'your_twilio_phone_number'
+
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 
 # Password validation
