@@ -1,0 +1,5 @@
+Django==4.2.2
+django_environ==0.10.0
+djangorestframework==3.14.0
+PyJWT==2.7.0
+twilio==8.3.0

@@ -10,36 +10,60 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from typing import Any, List
+
+import environ
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# read th .env file
+# set casting, default value
+env: environ.Env = environ.Env(DEBUG=(bool, False))
+env.read_env(env_file=os.path.join(BASE_DIR, '.env'))  # type: ignore
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&%5s2jmmjgi+7irb5=5b+0h**2r2$ui8tnb!wkpogw5=c-p%0w"
+
+def get_env_variable(var_name: str) -> Any:
+    try:
+        # return os.environ[var_name]
+        return env(var_name)
+    except KeyError as exc:
+        error_msg = f"set the {var_name} environment variable"
+        raise ImproperlyConfigured(error_msg) from exc
+
+
+SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG: bool = get_env_variable('DEBUG')
 
 ALLOWED_HOSTS = []
 
+# Twilio configuration
+TWILIO_ACCOUNT_SID: Any = env('ENV_TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN: Any = env('ENV_TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER: Any = env('ENV_TWILIO_PHONE_NUMBER')
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS: list[str] = [
+    "auth.apps.AuthConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE: list[str] = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -51,7 +75,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "theFuture.urls"
 
-TEMPLATES = [
+TEMPLATES: list[dict[str, Any]] = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
@@ -69,14 +93,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "theFuture.wsgi.application"
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
+# If using Docker the following will set your INTERNAL_IPS correctly in Debug mode:
+
+# if DEBUG:
+#     import socket  # only if you haven't already imported this
+#     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+#     INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1", "10.0.2.2"]
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "theFuture",
+        "USER": "postgres",
+        "PASSWORD": "12345",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
     }
 }
 
